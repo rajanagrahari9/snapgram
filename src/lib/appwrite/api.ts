@@ -179,23 +179,6 @@ export async function deleteFile(fileId: string) {
     }
 }
 
-// ============================== GET POSTS
-export async function searchPosts(searchTerm: string) {
-    try {
-        const posts = await database.listDocuments(
-            appwriteConfig.databaseId,
-            appwriteConfig.postCollectionId,
-            [Query.search("caption", searchTerm)]
-        );
-
-        if (!posts) throw Error;
-
-        return posts;
-    } catch (error) {
-        console.log(error);
-    }
-}
-
 export async function getRecentPosts() {
     try {
         const posts = await database.listDocuments(
@@ -313,8 +296,8 @@ export async function updatePost(post: IUpdatePost) {
             post.postId,
             {
                 caption: post.caption,
-                imageUrl: post.imageUrl,
-                imageId: post.postId,
+                imageUrl: image.imageUrl,
+                imageId: image.imageId,
                 location: post.location,
                 tags: tags,
             }
@@ -345,3 +328,40 @@ export async function deletePost(postId: string, imageId: string) {
     }
 }
 
+export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
+    const queries: any[] = [Query.orderDesc('$updatedAt'), Query.limit(10)];
+
+    if (pageParam) {
+        queries.push(Query.cursorAfter(pageParam.toString()));
+    }
+
+    try {
+        const posts = await database.listDocuments(
+            appwriteConfig.databaseId,
+            appwriteConfig.postCollectionId,
+            queries
+        );
+
+        if (!posts) throw Error;
+
+        return posts;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export async function searchPosts(searchTerm: string) {
+    try {
+        const posts = await database.listDocuments(
+            appwriteConfig.databaseId,
+            appwriteConfig.postCollectionId,
+            [Query.search("caption", searchTerm)]
+        );
+
+        if (!posts) throw Error;
+
+        return posts;
+    } catch (error) {
+        console.log(error);
+    }
+}
